@@ -10,15 +10,29 @@ Shader "Custom/SimpleShader"{
 
 			#pragma vertex vert
 			#pragma fragment frag
+			
+			struct a2v{
+				float4 vertex : POSITION;
+				float3 normal : NORMAL;
+				float4 texcoord : TEXCOORD;
+			};
+
+			struct v2f{
+				float4 pos : SV_POSITION;
+				fixed3 color : COLOR0;
+			};
 
 			fixed4 _Color;
 
-			float4 vert(float4 v : POSITION) : SV_POSITION{
-				return UnityObjectToClipPos(v);
+			v2f vert(a2v v){
+				v2f o;
+				o.pos = UnityObjectToClipPos(v.vertex);
+				o.color = v.normal * 0.5 + fixed3(0.0,0.0,0.0);
+				return o;
 			}
 
-			float4 frag() : SV_TARGET{
-				return _Color;
+			fixed4 frag(v2f i) : SV_TARGET{
+				return (fixed4(i.color,1.0) + _Color * 0.5);
 			}
 
 			ENDCG

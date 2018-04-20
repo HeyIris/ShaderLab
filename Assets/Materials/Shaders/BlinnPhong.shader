@@ -37,7 +37,8 @@ Shader "Custom/BlinnPhong" {
 				//顶点坐标从模型空间转换到剪裁空间
 				o.pos = UnityObjectToClipPos(v.vertex);
 				//顶点法线从模型空间转换到世界空间
-				o.worldNormal = normalize(mul(v.normal, (float3x3)unity_WorldToObject));
+				//o.worldNormal = normalize(mul(v.normal, (float3x3)unity_WorldToObject));
+				o.worldNormal = UnityObjectToWorldNormal(v.normal);
 				//顶点从模型空间转换到世界空间
 				o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
 
@@ -49,14 +50,16 @@ Shader "Custom/BlinnPhong" {
 				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
 
 				//顶点法线从模型空间转换到世界空间
-				fixed3 worldNormal = i.worldNormal;
+				fixed3 worldNormal = normalize(i.worldNormal);
 				//获取世界空间的光照方向
-				fixed3 worldLight = normalize(_WorldSpaceLightPos0.xyz);
+				//fixed3 worldLight = normalize(_WorldSpaceLightPos0.xyz);
+				fixed3 worldLight = normalize(UnityWorldSpaceLightDir(i.worldPos));
 				//计算漫反射光照
 				fixed3 diffuse = _LightColor0.rgb * _Diffuse.rgb * saturate(dot(worldNormal, worldLight));
 				
 				//计算视线方向
-				fixed3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos);
+				//fixed3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos);
+				fixed3 viewDir = normalize(UnityWorldSpaceViewDir(i.worldPos));
 				//计算h方向
 				fixed3 halfDir = normalize(worldLight + viewDir);
 				//计算高光反射光照

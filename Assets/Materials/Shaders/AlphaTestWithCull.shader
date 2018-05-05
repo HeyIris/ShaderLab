@@ -1,17 +1,16 @@
-Shader "Custom/Alpha Blend"{
+Shader "Custom/Alpha Test With Cull"{
     Properties{
         _Color("Main Tint", Color) = (1,1,1,1)
         _MainTex("Main Tex", 2D) = "white"{}
-        _AlphaScale("Alpha Scale", Range(0,1)) = 1
+        _CutoOff("Alpha Test", Range(0,1)) = 0.5
     }
     SubShader{
-        Tags {"Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent"}
+        Tags {"Queue" = "AlphaTest" "IgnoreProjector" = "True" "RenderType" = "TransparentCutout"}
         pass{
             Tags {"LightMode" = "ForwardBase"}
 
-            ZWrite Off
-            Blend SrcAlpha OneMinusSrcAlpha
-
+            Cull Off
+            
             CGPROGRAM
 
             #pragma vertex vert
@@ -22,7 +21,7 @@ Shader "Custom/Alpha Blend"{
             fixed4 _Color;
             sampler2D _MainTex;
             float4 _MainTex_ST;
-            fixed _AlphaScale;
+            fixed _CutoOff;
 
             struct a2v{
                 float4 vertex : POSITION;
@@ -54,11 +53,13 @@ Shader "Custom/Alpha Blend"{
 
                 fixed4 texColor = tex2D(_MainTex,i.uv);
 
+                clip(texColor.a - _CutoOff);
+
                 fixed3 albedo = texColor.rgb * _Color.rgb;
                 fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz * albedo;
                 fixed3 diffuse = _LightColor0.rgb * albedo * max(0,dot(worldNormal,worldLightDir));
 
-                return fixed4(ambient + diffuse, texColor.a * _AlphaScale);
+                return fixed4(ambient + diffuse, 1.0);
             }
 
             ENDCG

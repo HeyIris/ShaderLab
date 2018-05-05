@@ -1,4 +1,4 @@
-Shader "Custom/Alpha Blend"{
+Shader "Custom/Alpha Blend ZWrite"{
     Properties{
         _Color("Main Tint", Color) = (1,1,1,1)
         _MainTex("Main Tex", 2D) = "white"{}
@@ -6,6 +6,10 @@ Shader "Custom/Alpha Blend"{
     }
     SubShader{
         Tags {"Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent"}
+        pass{
+            ZWrite On
+            ColorMask 0
+        }
         pass{
             Tags {"LightMode" = "ForwardBase"}
 
@@ -27,7 +31,7 @@ Shader "Custom/Alpha Blend"{
             struct a2v{
                 float4 vertex : POSITION;
                 float3 normal : NORMAL;
-                float4 texcoord : TEXCOORD0;
+                float4 texcoord : TEXCOORD;
             };
 
             struct v2f{
@@ -53,10 +57,9 @@ Shader "Custom/Alpha Blend"{
                 fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
 
                 fixed4 texColor = tex2D(_MainTex,i.uv);
-
                 fixed3 albedo = texColor.rgb * _Color.rgb;
                 fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz * albedo;
-                fixed3 diffuse = _LightColor0.rgb * albedo * max(0,dot(worldNormal,worldLightDir));
+                fixed3 diffuse = _LightColor0.rgb * albedo * max(0, dot(worldNormal,worldLightDir));
 
                 return fixed4(ambient + diffuse, texColor.a * _AlphaScale);
             }
@@ -64,5 +67,5 @@ Shader "Custom/Alpha Blend"{
             ENDCG
         }
     }
-    Fallback "VertexLit"
+    Fallback "Diffuse"
 }
